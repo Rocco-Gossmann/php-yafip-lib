@@ -1,11 +1,25 @@
 <?php namespace rogoss\yafip;
 
 require_once __DIR__ . "/ComponentChunk.php";
-
 use rogoss\core\Utils;
 use Exception;
 
+/** @ignore */
+function _rogoss_yafip_page_include($sFile) {
+    return include $sFile;
+}
+
 class Page {
+
+
+    private function loadIncData($sFile, $sContext) {
+        $aData = file_exists($sFile) 
+            ? _rogoss_yafip_page_include($this->aDataFiles[$sContext] = $sFile)
+            : []
+        ;
+        if (!is_array($aData)) $aData = [];
+        return $aData;
+    }
 
     public static function load($sPageName) {
 
@@ -134,12 +148,7 @@ class Page {
 
         $aDataFiles = [];
 
-        $aData = file_exists($sPath . "/data.php") 
-            ? include ($aDataFiles[""] = $sPath . "/data.php")
-            : []
-        ;
-
-        if (!is_array($aData)) $aData = [];
+        $aData = $oI->loadIncData($sPath . "/data.php", "");
 
         $aContextList = [];
 
@@ -159,12 +168,7 @@ class Page {
                 $oLayout = $aCaches[$sKey] ?? Layout::load($sComponentsPath . "/" . $sKey);
                 $aProcessList[$iIndex]->layout = $oLayout;
 
-                $aCompData = file_exists($sComponentsPath . "/" . $sKey . "/data.php") 
-                    ? include ($aDataFiles[$aContextList[$iIndex]] = $sComponentsPath . "/" . $sKey . "/data.php") 
-                    : []
-                ;
-
-                if (!is_array($aCompData)) $aCompData = [];
+                $aCompData = $oI->loadIncData($sComponentsPath . "/" . $sKey . "/data.php", $aContextList[$iIndex]); 
 
                 $aComponentTokens[] = &$aProcessList[$iIndex];
 
@@ -193,7 +197,6 @@ class Page {
 
         $oI->aComponentTree = $aComponentTree;
         $oI->aLayouts = $aCaches;
-        $oI->aDataFiles = $aDataFiles;
 
         $oI->aData = Utils::flattenArray($aData);
 
@@ -315,7 +318,6 @@ class Page {
     }
 
     public function render() {
-        echo "<!DOCTYPE html>";
         include $this->sCompiledTemplateFile;
     }
 
