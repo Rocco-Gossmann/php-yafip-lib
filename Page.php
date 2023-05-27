@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/ComponentChunk.php";
 
-use de\roccogossmann\php\core\Utils;
+use rogoss\core\Utils;
 use Exception;
 
 class Page {
