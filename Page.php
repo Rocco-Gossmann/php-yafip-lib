@@ -15,9 +15,17 @@ class Page {
     private function loadIncData($sFile, $sContext) {
         $aData = file_exists($sFile) 
             ? _rogoss_yafip_page_include($this->aDataFiles[$sContext] = $sFile)
-            : []
-        ;
+            : [] ;
         if (!is_array($aData)) $aData = [];
+
+        $aFlattened = Utils::flattenArray( $aData, null, $sContext);
+
+        foreach($aFlattened as $sKey => &$mValue) 
+            if(is_callable($mValue)) 
+                $mValue = $mValue($sKey, $this->aData[$sKey] ?? null);
+
+        Utils::mutateArrayRecursive($this->aData, $aFlattened);
+
         return $aData;
     }
 
@@ -95,21 +103,9 @@ class Page {
             if(!empty($meta['datafiles']) and is_array($meta['datafiles'])) {
                 $aData = [];
 
-                foreach($meta['datafiles'] as $sContext => $sDataFile) {
-                    $aCompData = file_exists($sDataFile) 
-                        ? include ($oI->aDataFiles[$sContext] = $sDataFile)
-                        : []
-                    ;
+                foreach($meta['datafiles'] as $sContext => $sDataFile) 
+                    $oI->loadIncData($sDataFile, $sContext);
 
-                    $aFlattened = Utils::flattenArray($aCompData, null, $sContext);
-
-                    foreach($aFlattened as $sKey => &$mValue) 
-                        if(is_callable($mValue)) 
-                            $mValue = $mValue($sKey, $oI->aData[$sKey] ?? null);
-
-                    Utils::mutateArrayRecursive($oI->aData, $aFlattened);
-
-                }
             }
             return $oI;
 
@@ -148,7 +144,7 @@ class Page {
 
         $aDataFiles = [];
 
-        $aData = $oI->loadIncData($sPath . "/data.php", "");
+        $oI->loadIncData($sPath . "/data.php", "");
 
         $aContextList = [];
 
@@ -197,8 +193,6 @@ class Page {
 
         $oI->aComponentTree = $aComponentTree;
         $oI->aLayouts = $aCaches;
-
-        $oI->aData = Utils::flattenArray($aData);
 
         return $oI;
     }
