@@ -46,6 +46,7 @@ class Layout {
         if($bRecompile) {
             $oI = static::create($sRawFile);
             $oI->compile($sDefinitionFile);
+            $oI->_recompilied = true;
             return $oI;
         }
     }

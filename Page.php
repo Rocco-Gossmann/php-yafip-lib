@@ -96,9 +96,12 @@ class Page {
             $oI = new static();
 
             $oI->oLayout = Layout::load($meta['mainlayout'][1] ?? "");
+            if($oI->oLayout->recompiled) throw new Exception("recompile");
 
-            foreach($meta['sublayouts'] as $sKey => $aSubLayout)
+            foreach($meta['sublayouts'] as $sKey => $aSubLayout) {
                 $oI->aLayouts[$sKey] = Layout::load($aSubLayout[1]);
+                if($oI->aLayouts[$sKey]->recompiled) throw new Exception("recompile");
+            }
 
             if(!empty($meta['datafiles']) and is_array($meta['datafiles'])) {
                 $aData = [];
@@ -164,12 +167,9 @@ class Page {
                 $oLayout = $aCaches[$sKey] ?? Layout::load($sComponentsPath . "/" . $sKey);
                 $aProcessList[$iIndex]->layout = $oLayout;
 
-                $aCompData = $oI->loadIncData($sComponentsPath . "/" . $sKey . "/data.php", $aContextList[$iIndex]); 
+                $oI->loadIncData($sComponentsPath . "/" . $sKey . "/data.php", $aContextList[$iIndex]); 
 
                 $aComponentTokens[] = &$aProcessList[$iIndex];
-
-                // $aDataProcess[$iIndex] = &array_replace_recursive($aDataProcess[$iIndex], $aCompData);
-                Utils::mutateArrayRecursive($aDataProcess[$iIndex], $aCompData);
 
                 $aCaches[$sKey] = $oLayout;
                 $aLayoutTokens = $oLayout->getTokens();
