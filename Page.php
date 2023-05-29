@@ -3,6 +3,7 @@
 require_once __DIR__ . "/ComponentChunk.php";
 use rogoss\core\Utils;
 use Exception;
+use Generator;
 
 /** @ignore */
 function _rogoss_yafip_page_include($sFile) {
@@ -37,8 +38,8 @@ class Page {
         $sComponentPath = $sPathDocRoot . rtrim(self::getEnvVar("ROGOSS_YAFIP_COMPONENTSROOT"), "\\/");
 
         $sPagePath     = $sPagesPath. "/" . rtrim($sPageName, "\\/");
-        $sPageTemplate = $sPagePath . "/_template.ff.php";
-        $sPageCompiled = $sPagePath . "/_page.ff.php";
+        $sPageTemplate = $sPagePath . "/.template.ff.php";
+        $sPageCompiled = $sPagePath . "/.page.ff.php";
 
         $oI = (file_exists($sPageCompiled) && file_exists($sPageTemplate))
             ? static::fromCompiled($sPageCompiled, $sPagePath, $sComponentPath)
@@ -265,7 +266,7 @@ class Page {
                         if (isset($aBranchRoot[$aChunk['slot']])) {
                             /** @var ComponentChunk */
                             $oChunk = $aBranchRoot[$aChunk['slot']];
-                            if (empty($oChunk->layout)) fwrite($hCacheFile, "<?php \$this->renderData('{$oChunk->label}'); ?>");
+                            if (empty($oChunk->layout)) fwrite($hCacheFile, "<?php \$this->renderData('{$oChunk->label}', ". var_export($aChunk['args'], true) . "); ?>");
                             else                        recurse($oChunk->layout, $hCacheFile, $me, $oChunk->components, $aChunk['slot'], $sPrefix . "." . $sSlot);
                         }
                         break;
@@ -302,11 +303,16 @@ class Page {
      *
      * @return void 
      */
-    private function renderData($sToken) {
+    private function renderData($sToken, $args) {
 
         $mToken = $this->aData[$sToken] ?? "";
 
-        if(is_callable($mToken)) $mToken();
+        if($mToken instanceof Generator) {
+            echo $mToken->send($args);
+        }
+
+        elseif(is_callable($mToken)) call_user_func_array($mToken, $args);
+
         else echo $mToken;
 
     }

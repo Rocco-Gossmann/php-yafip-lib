@@ -20,7 +20,7 @@ class Layout {
     public static function load($sDefinitionFile) {
 
         $sRawFile = $sDefinitionFile."/layout.html";
-        $sDefinitionFile = $sDefinitionFile."/_layout.ff.php";
+        $sDefinitionFile = $sDefinitionFile."/.layout.ff.php";
 
         $oI = new static();
         $bRecompile = false;
@@ -85,12 +85,15 @@ class Layout {
 
                     $sTPL = substr($sTPL, 0, -3);
 
+                    $aParts = explode(":", $sTPL);
+                    $sTPL = array_shift($aParts);
+
                     if(strpos($sTPL, ".") !== false) 
                         throw new LayoutException("tokens cant contain '.'", LayoutException::PARSE_ERROR);
 
                     switch($mode) {
                         case 0: $aChunks[] = ["raw", $iLastChunkStart, $iReadHead-$iLastChunkStart+2]; break;
-                        case 1: $aChunks[] = ["tpl", $sTPL]  ;$aTokens[$sTPL] = $sTPL  ; break;
+                        case 1: $aChunks[] = ["tpl", $sTPL, array_values($aParts)]  ;$aTokens[$sTPL] = $sTPL  ; break;
                     }
 
                     $bKeepReading=false;
@@ -115,10 +118,14 @@ class Layout {
                         if($sLast4 === $sTPLClose) {
 
                             $sTPL = substr($sTPL, 0, -3);
+    
+                            $aParts = explode(":", $sTPL);
+                            $sTPL = array_shift($aParts);
+
                             if(strpos($sTPL, ".") !== false) 
                                 throw new LayoutException("tokens cant contain '.'", LayoutException::PARSE_ERROR);
 
-                            $aChunks[] = [$sTPLType, $sTPL];
+                            $aChunks[] = [$sTPLType, $sTPL, array_values($aParts)];
                             $aTokens[$sTPL] = $sTPL;
                             $iLastChunkStart = $iReadHead;
                             $mode = 0;
@@ -178,10 +185,7 @@ class Layout {
                     break;
 
                 case 'tpl':
-                case 'dyn':
-                case 'html':
-                case 'dhtm':
-                    yield [ 'type' => 'slot', 'specification' => $aChunk[0], 'slot' => $aChunk[1] ];
+                    yield [ 'type' => 'slot', 'specification' => $aChunk[0], 'slot' => $aChunk[1], 'args' => $aChunk[2] ];
                     break;
                 }
             }
