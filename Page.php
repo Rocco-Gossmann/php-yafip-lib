@@ -33,8 +33,8 @@ class Page {
 
         $sPathDocRoot = rtrim($_SERVER['DOCUMENT_ROOT'], "\\/") . "/";
 
-        $sPagesPath     = $sPathDocRoot . rtrim(self::getEnvVar("DE_ROCCOGOSSMANN_PHP_FUNFRAMES_PAGESROOT")     , "\\/");
-        $sComponentPath = $sPathDocRoot . rtrim(self::getEnvVar("DE_ROCCOGOSSMANN_PHP_FUNFRAMES_COMPONENTSROOT"), "\\/");
+        $sPagesPath     = $sPathDocRoot . rtrim(self::getEnvVar("ROGOSS_YAFIP_PAGESROOT")     , "\\/");
+        $sComponentPath = $sPathDocRoot . rtrim(self::getEnvVar("ROGOSS_YAFIP_COMPONENTSROOT"), "\\/");
 
         $sPagePath     = $sPagesPath. "/" . rtrim($sPageName, "\\/");
         $sPageTemplate = $sPagePath . "/_template.ff.php";

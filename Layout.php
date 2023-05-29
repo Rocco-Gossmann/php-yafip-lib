@@ -91,9 +91,6 @@ class Layout {
                     switch($mode) {
                         case 0: $aChunks[] = ["raw", $iLastChunkStart, $iReadHead-$iLastChunkStart+2]; break;
                         case 1: $aChunks[] = ["tpl", $sTPL]  ;$aTokens[$sTPL] = $sTPL  ; break;
-                        case 2: $aChunks[] = ["dyn", $sTPL]  ;$aTokens[$sTPL] = $sTPL  ; break;
-                        case 3: $aChunks[] = ["html", $sTPL] ;$aTokens[$sTPL] = $sTPL  ; break;
-                        case 4: $aChunks[] = ["dhtm", $sTPL] ;$aTokens[$sTPL] = $sTPL  ; break;
                     }
 
                     $bKeepReading=false;
@@ -108,9 +105,6 @@ class Layout {
                     case 0:
                         switch($sLast4) {
                         case "[[--": $mode = 1;
-                        case "{{--": if($sLast4 === "{{--") $mode = 2;
-                        case "[@--": if($sLast4 === "[@--") $mode = 3;
-                        case "{@--": if($sLast4 === "{@--") $mode = 4;
                             $aChunks[] = ["raw", $iLastChunkStart, ($iReadHead-4) - $iLastChunkStart];
                             $iLastChunkStart = $iReadHead;
                             $sTPL = "";
@@ -118,9 +112,6 @@ class Layout {
                         break;
 
                     case 1: $sTPLType = "tpl"; $sTPLClose = "--]]";
-                    case 2: if($mode == 2) { $sTPLType = "dyn"; $sTPLClose = "--}}"; }
-                    case 3: if($mode == 3) { $sTPLType = "html"; $sTPLClose = "--]]"; }
-                    case 4: if($mode == 4) { $sTPLType = "dhtm"; $sTPLClose = "--}}"; }
                         if($sLast4 === $sTPLClose) {
 
                             $sTPL = substr($sTPL, 0, -3);
